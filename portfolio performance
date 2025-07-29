@@ -1,0 +1,148 @@
+As a Portfolio Manager, assessing the performance of your main portfolio relative to the hedge portfolio is critical to understanding true alpha (performance not explained by the hedge), risk-adjusted returns, and hedge effectiveness. Here's how to approach it step-by-step:
+
+✅ 1. Set the Objective
+Ask yourself:
+
+Is the hedge meant to neutralize market exposure (e.g. beta hedging)?
+
+Or sector/style risks (e.g. long growth stocks, short value stocks)?
+
+Or individual security/issuer risks?
+
+✅ 2. Calculate Performance of Both
+Compute daily/weekly/monthly P&L or returns for both:
+
+text
+Copy
+Edit
+Main Portfolio Return = (P_t - P_0 + Dividends) / P_0
+Hedge Portfolio Return = (H_t - H_0) / H_0
+Net Portfolio Return = Main Portfolio Return - Hedge Return
+✅ 3. Compare Performance: Net of Hedge
+Track Net P&L or Net Return:
+
+text
+Copy
+Edit
+Net Performance = P&L_Main - P&L_Hedge
+This shows whether your alpha bets or idiosyncratic positions are working.
+
+✅ 4. Check Correlation & Beta
+Run a regression of your portfolio return vs. hedge return:
+
+text
+Copy
+Edit
+Rp = α + β * Rh + ε
+Where:
+
+β: hedge sensitivity (ideally ~1 for full hedge)
+
+α: excess return (your true alpha)
+
+ε: residual (unexplained noise/return)
+
+A low R² means poor hedge; high alpha + low beta = strong performance.
+
+✅ 5. Visualize Performance
+Plot Cumulative Returns of:
+
+Main portfolio
+
+Hedge portfolio
+
+Net (Main – Hedge)
+
+Use rolling beta and tracking error charts
+
+Evaluate drawdowns and volatility
+
+✅ 6. Risk-Adjusted Metrics (Net of Hedge)
+Calculate:
+
+Sharpe Ratio (Net Return / Volatility)
+
+Sortino Ratio (Downside risk-adjusted)
+
+Information Ratio (Net Return / Tracking Error)
+
+✅ 7. Stress Tests & Scenarios
+Check how both portfolios behave in stress events.
+
+If both go down together, your hedge may be incomplete or correlated with your main book.
+
+✅ 8. Attribution Analysis
+Break Net Performance into:
+
+Stock Selection (did picks outperform peers?)
+
+Timing (were entries/exits effective?)
+
+Sector/Factor Exposures (did your long-short ideas work?)
+
+🔍 Example:
+If you're long $10M in tech stocks and short $10M in NASDAQ futures:
+
+If NASDAQ drops 5% and your portfolio drops 4%, you've outperformed by +1% net of hedge.
+
+But if your beta was <1, you're not fully hedged.
+
+Final Thought:
+True performance is in the residuals. A good hedge neutralizes systematic risk, revealing your true investment skill.
+
+Let me know if you want this in a spreadsheet or Python script.
+
+
+Absolutely — this line of code is running a linear regression of your Short portfolio returns against your Hedge basket returns, and the summary() output gives you deep insights into hedge effectiveness, alpha, and exposure.
+
+🧠 What This Line Does:
+python
+Copy
+Edit
+X = sm.add_constant(returns_df['Hedge'])  # Add intercept (alpha)
+model = sm.OLS(returns_df['Short'], X).fit()
+This fits the model:
+
+Short
+𝑡
+=
+𝛼
++
+𝛽
+⋅
+Hedge
+𝑡
++
+𝜀
+𝑡
+Short 
+t
+​
+ =α+β⋅Hedge 
+t
+​
+ +ε 
+t
+​
+ 
+Where:
+
+Short_t = daily return of short basket
+
+Hedge_t = daily return of hedge basket
+
+α (Intercept) = performance not explained by hedge (aka "alpha")
+
+β (Slope) = how sensitive your short basket is to the hedge
+
+ε_t = residual (noise)
+
+📄 What the Output Means (from model.summary())
+✅ Key Output Fields:
+Metric	Interpretation
+coef (const)	Your alpha — average return not explained by the hedge. A positive alpha means your short basket is underperforming your hedge (bad for market-neutral), or you're earning excess returns (if you're net long the hedge).
+coef (Hedge)	Your beta — how much your short basket moves with the hedge basket. Ideally, close to -1 if you want full hedge symmetry.
+R-squared	% of variation in the short basket that is explained by the hedge. Closer to 1 = good hedge; close to 0 = ineffective hedge.
+**P>	t
+Standard Error	Variability in the coefficient estimate. Smaller is better.
+F-statistic / Prob (F)	Tests overall significance of regression (i.e., is this model meaningful?).
